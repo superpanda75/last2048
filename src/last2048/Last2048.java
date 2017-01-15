@@ -24,23 +24,52 @@ public class Last2048 extends JPanel
 		 
 		 private Tuile[] mesTuiles;
 		 private int monScore;
-		 private boolean Victoire;
-		 private boolean Defaite;
+		 private boolean Victoire = false;
+		 private boolean Defaite = false;
 		 
-		public static void main(String[] args)
-		{
-			JFrame game = new JFrame();
-		    game.setTitle("Dernier 2048 vant la fin du Monde");
-		    game.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		    game.setSize(408, 500);
-		    game.setResizable(true);
-
-		    game.add(new Last2048());
-
-		    game.setLocationRelativeTo(null);
-		    game.setVisible(true);
-		}
 		
+		 public Last2048() {
+
+			    setFocusable(true);
+			    addKeyListener(new KeyAdapter() {
+			      @Override
+			      public void keyPressed(KeyEvent e) {
+			        if (e.getKeyCode() == KeyEvent.VK_ENTER ) {
+			          iniPartie();
+			        }
+			        if (!deplacePossible()) {
+			          Defaite = true;
+			        }
+
+			        if (!Victoire && !Defaite) {
+			          switch (e.getKeyCode()) {
+			            case KeyEvent.VK_LEFT:
+			              deplacementGauche();
+			              break;
+			            case KeyEvent.VK_RIGHT:
+			              deplacementDroite();
+			              break;
+			            case KeyEvent.VK_DOWN:
+			              deplacementBas();
+			              break;
+			            case KeyEvent.VK_UP:
+			              deplacementHaut();
+			              break;
+			          }
+			        }
+
+			        if (!Victoire && !deplacePossible()) {
+			          Defaite = true;
+			        }
+
+			        repaint();
+			      }
+			    });
+			    iniPartie();
+			  }
+		
+		 
+		 
 		/*
 		 * cette fonction permet l'initialisation de la partie, elle sera appelée pour chaque nouvelle partie
 		 * 
@@ -287,7 +316,7 @@ public class Last2048 extends JPanel
 				    	  //puis on update le score 
 				        valActuelle = valActuelle * 2;
 				        monScore = monScore + valActuelle;
-				        int pourGagner = 2048;
+				        int pourGagner = 8;
 				        if (valActuelle == pourGagner) {
 				          Victoire = true;
 				        }
@@ -417,67 +446,7 @@ public class Last2048 extends JPanel
 			
 		
 		
-	public Last2048() {	
-			 setFocusable(true);
-			    addKeyListener(new KeyAdapter() {
-			      public void touche(KeyEvent touche){
-						
-						 if (touche.getKeyCode() == KeyEvent.VK_ENTER) {
-					          iniPartie();
-					        }
-					        if (!deplacePossible()) {
-					          Defaite = true;
-					        }
-
-					        if (!Victoire && !Defaite) 
-					        {		          
-					           if (
-					        		   (touche.getKeyCode() == KeyEvent.VK_LEFT)  
-					        		   || 
-					        		   (touche.getKeyCode() == KeyEvent.VK_Q)
-					        	)		        	   
-					           {
-					        	   deplacementGauche();
-					           }
-					           
-					           else if (
-					        		   (touche.getKeyCode() == KeyEvent.VK_RIGHT)  
-					        		   || 
-					        		   (touche.getKeyCode() == KeyEvent.VK_D)
-					        		   )
-					           {
-					        	   deplacementDroite();
-					           }
-					        	   
-					            else if (
-					            		(touche.getKeyCode() == KeyEvent.VK_UP) 
-					            		|| 
-					        		   (touche.getKeyCode() == KeyEvent.VK_Z)
-					        		   )
-					           {
-					        	   deplacementHaut();
-					           }
-					           
-					            else if (
-					            		(touche.getKeyCode() == KeyEvent.VK_DOWN) 
-					            		|| 
-					        		   (touche.getKeyCode() == KeyEvent.VK_S)
-					        		   )
-					           {
-					        	   deplacementBas();
-					           }
-					          }
-					        
-
-					        if (!Victoire && !deplacePossible()) {
-					          Defaite = true;
-					        }
-
-					        repaint();
-					      }
-			    });
-			    iniPartie();
-		}	
+		
 	
 	
 	 private Tuile tuilePos(int x, int y) {
@@ -544,7 +513,6 @@ public class Last2048 extends JPanel
 		}
 	
 	
-	
 		/**
 		 * DessineTuile permet de dessiner les tuiles, 
 		 * @param affichItem
@@ -606,12 +574,41 @@ public class Last2048 extends JPanel
 		    if (valeur != 0){
 		      item.drawString(number, coordX + (TUILE_TAILLE - longueur) / 2, coordY + TUILE_TAILLE - (TUILE_TAILLE - hauteur) / 2 - 2);
 		      };
+		      if (Victoire || Defaite) {
+		          item.setColor(new Color(000000));
+		          item.fillRect(0, 0, getWidth(), getHeight());
+		          item.setColor(new Color(0x80ff00));
+		          item.setFont(new Font(FONT, Font.BOLD, 60));
+		          if (Victoire) {
+		        	item.setColor(new Color(0x99ff33));  
+		            item.drawString("(G_G!)", 85, 188);
+		            item.drawString("(^_^')", 85, 300);
+		            item.setFont(new Font(FONT, Font.PLAIN, 20));
+		            item.setColor(new Color(0x80ff00));
+		            item.drawString("Remettre ça -> Entree ", 80, getHeight() - 50);
+		            item.setFont(new Font(FONT, Font.PLAIN, 23));
+			        item.drawString("Score: " + monScore, 250, 400);
+		          }
+		          if (Defaite) {
+		        	item.setColor(new Color(0xff3333));
+		            item.drawString("Game Over!", 63, 163);
+		            item.drawString("T'as PERDU !!!", 80, 260);
+		            item.drawString("(-_-#) ! Tu n'as pas", 80, 350);
+		            item.drawString(" sauvé le futur !!!", 80, 430);
+		            item.setFont(new Font(FONT, Font.PLAIN, 20));
+		            item.setColor(new Color(0xff3333));
+		            item.drawString("Retente ta chance ! -> Entree ", 80, getHeight() - 50);
+		            item.setColor(new Color(0xff3333));
+		            item.setFont(new Font(FONT, Font.PLAIN, 23));
+			        item.drawString("Score: " + monScore, 250, 500);
+		          }
+		        }
+		      item.setColor(new Color(000000));
+		      item.setFont(new Font(FONT, Font.PLAIN, 23));
+		        item.drawString("Score: " + monScore, 10, 450);
+		       
 
-		    item.setFont(new Font(FONT, Font.PLAIN, 23));
-		   
-
-		  }
-		
+		      }
 		
 		
 		/**
@@ -658,11 +655,24 @@ public class Last2048 extends JPanel
 			    	else if (valeur == 512 ) { return  new Color(0xff8000); } 
 			    	else if (valeur == 1024 ) { return  new Color(0xff6666); } 
 			    	else if (valeur == 2048 ) { return  new Color(0xff0000); } 	
-			    	else return new Color(0xff0000); 
+			    	else return new Color(0xf5f2f0); 
 			    	 }
 			    
 			    public void setValeur(int x){
 			    	valeur = x;
 			    }
 			  }
+		public static void main(String[] args)
+		{
+			JFrame game = new JFrame();
+		    game.setTitle("Dernier 2048 vant la fin du Monde");
+		    game.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		    game.setSize(730, 625);
+		    game.setResizable(true);
+
+		    game.add(new Last2048());
+
+		    game.setLocationRelativeTo(null);
+		    game.setVisible(true);
+		}
 			}
