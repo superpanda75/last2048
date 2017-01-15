@@ -3,9 +3,14 @@ package last2048;
 import javax.swing.*;
 
 
+
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.*;
 import java.util.List;
+import java.util.LinkedList;
+import java.util.ArrayList;
 
 public class Last2048 extends JPanel
 	{
@@ -19,26 +24,38 @@ public class Last2048 extends JPanel
 		 
 		 private Tuile[] mesTuiles;
 		 private int monScore;
+		 private boolean Victoire;
+		 private boolean Defaite;
 		 
 		public static void main(String[] args)
 		{
-			generWindow();
+			JFrame game = new JFrame();
+		    game.setTitle("Dernier 2048 vant la fin du Monde");
+		    game.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		    game.setSize(408, 500);
+		    game.setResizable(true);
+
+		    game.add(new Last2048());
+
+		    game.setLocationRelativeTo(null);
+		    game.setVisible(true);
 		}
+		
 		/*
 		 * cette fonction permet l'initialisation de la partie, elle sera appelée pour chaque nouvelle partie
 		 * 
 		 */
 		public void iniPartie() {
 		    
-		   // myWin = false;
-		    //myLose = false;
+		    Victoire = false;
+		    Defaite = false;
 		    monScore = 0;
 		    mesTuiles = new Tuile[4 * 4];
 		    for (int i = 0; i < mesTuiles.length; i++) {
 		      mesTuiles[i] = new Tuile();
 		    }
-		    //addTuile();
-		    //addTuile();
+		    insereInRdmTuile();
+		    insereInRdmTuile();
 		  }
 		
 		/*
@@ -81,6 +98,11 @@ public class Last2048 extends JPanel
 			}
 		  }
 		
+		/**
+		 * cette fonction determine si un mouvement est possible en parcourant les position x et y via for ( for () )
+		 * 
+		 * @return boolean
+		 */
 		boolean deplacePossible() {
 			//On vérifie d'abords s'il y a de la place sinon on renvoie directement false pour le game over
 		    if (!estPleine()) {
@@ -113,7 +135,7 @@ public class Last2048 extends JPanel
 		 * @param int nbNew
 		 * @param List listeActuelle
 		 */
-		private static void reajusteListe(java.util.List<Tuile> listeActuelle, int nbNew) {
+		private static void reajusteListe(List<Tuile> listeActuelle, int nbNew) {
 		    while (listeActuelle.size() != nbNew) {
 		      listeActuelle.add(new Tuile());
 		    }
@@ -151,6 +173,234 @@ public class Last2048 extends JPanel
 		    }
 		  }
 		
+		/**
+		 * la fonction deplace ligne prend les Tuiles en parametre et verifie si celle-ci sont nulles
+		 * avec la methode isZero() de la classe Tuile. 
+		 * si elle ne sont pas vides, les tuile sont conservées dans une nouvelle liste qui est ensuite retournées.
+		 * 
+		 * @param exLigne
+		 * @return
+		 */
+		  private Tuile[] deplaceLigne(Tuile[] exLigne) {
+			    LinkedList<Tuile> movedLine = new LinkedList<Tuile>();
+			    for (int indexLigne = 0; indexLigne < 4; indexLigne++) {
+			      if (!exLigne[indexLigne].isZero()){
+			    	  
+			      
+			        movedLine.addLast(exLigne[indexLigne]);
+			      //cela est nécessaire pour ne pas perdre les tuiles existantes
+			      }
+			    }
+			    
+			    // Si la liste des Tuiles a deplacer == 0 alors on renvoie la ligne telle qu'elle.
+			    if (movedLine.size() == 0) {
+			      return exLigne;
+			    // Sinon on créer la nouvelle Ligne en pensant a jouter des tuiles
+			    } else {
+			      Tuile[] nouvLigne = new Tuile[4];
+			      reajusteListe(movedLine, 4);
+			      for (int i = 0; i < 4; i++) {
+			        nouvLigne[i] = movedLine.removeFirst();
+			      }
+			      return nouvLigne;
+			    }
+			  }
+		  
+		  /**
+		   * Nous aurons besoin de comparer des tuiles pour savoir s'il faut réajuster la liste ou s'il faut inserer des valeurs.
+		   * 
+		   * @param liste_1
+		   * @param liste_2
+		   * @return boolean
+		   */
+		  private boolean compareTuiles(Tuile[] liste_1, Tuile[] liste_2) {
+			    if (liste_1 == liste_2)
+			    {
+			      return true;
+			    } 
+			    else if (liste_1.length != liste_2.length) 
+			    {
+			      return false;
+			    }
+
+			    for (int index = 0; index < liste_1.length; index++) 
+			    {
+			      if (liste_1[index].valeur != liste_2[index].valeur) 
+			      {
+			        return false;
+			      }
+			    }
+			    return true;
+			  }
+		  
+		  
+		  
+		  
+		  /**
+		   * getLigne permet d'accéder à une ligne de notre liste de tuile
+		   * @param index
+		   * @return
+		   */
+		  private Tuile[] getLigne(int index) {
+			    Tuile[] tuile = new Tuile[4];
+			    for (int i = 0; i < 4; i++) {
+			      tuile[i] = tuilePos(i, index);
+			    }
+			    return tuile;
+			  }
+
+		  /**
+		   * Cette fonction permet d'écrire dans notre liste principale mesTuiles
+		   * et donc peut inserer toute une ligne dans la liste grace à l'indix pour obtenir "l'id" de la tuile danx la liste de 1 a 16
+		   * et notre valeur ne dépassera pas les milliers donc on fixe a 4 la taille de l'entier ! 
+		   * 
+		   * AH MOINS D ETRE TRES^10 BON xD !!
+		   * 
+		   * @param index
+		   * @param MaListe
+		   */
+			  private void setLigne(int index, Tuile[] listeSource) {
+			    System.arraycopy(listeSource, 0, mesTuiles, index * 4, 4);
+			  }
+			  
+			  
+			  /**
+			   * multiplicateur est l'une des fonction principales du 2048
+			   * elle gere la multiplication par 2 si les valeur de deux tuiles correspondent en creant une nouvelle 
+			   * liste à partir de l'ancienne
+			   * e
+			   * 
+			   * @param ligneActuelle
+			   * @return
+			   */
+			  private Tuile[] multiplicateur(Tuile[] ligneActuelle) {
+				    LinkedList<Tuile> nouvListe = new LinkedList<Tuile>();
+				    // on parcours et on vérifie si 0 ou pas, si une tuile est égale a 0 on s'arrête.
+				    
+				    for (int index = 0; index < 4 && !ligneActuelle[index].isZero(); index++) 
+				    {
+				    	//on récupère la valeur
+				      int valActuelle = ligneActuelle[index].valeur;
+				      if (index < 3 && ligneActuelle[index].valeur == ligneActuelle[index + 1].valeur) {
+				    	  //si les valeurs sont égale on fusionne les tuiles et on remplace l'ancienne valeur en commun par une seule valeur
+				    	  //etant le produit de l'ancienne valeur * 2
+				    	  //puis on update le score 
+				        valActuelle = valActuelle * 2;
+				        monScore = monScore + valActuelle;
+				        int pourGagner = 2048;
+				        if (valActuelle == pourGagner) {
+				          Victoire = true;
+				        }
+				        index++;
+				      }
+				      nouvListe.add(new Tuile(valActuelle));
+				    }
+				    //si la nouvelle liste n'a pas eu d'insertion, on renvoie la liste telle qu'elle
+				    if (nouvListe.size() == 0) {
+				      return ligneActuelle;
+				    } else {
+				      reajusteListe(nouvListe, 4);
+				      return nouvListe.toArray(new Tuile[4]);
+				    }
+				  }
+			  
+			  
+			  /**
+			   * La fonction orientationTuile permet d'obtenir des tuiles avec les nouvelles coordonnées en fonction de 
+			   * l'angle d'orientation qu'on obtiendra via les touches.
+			   * 
+			   * @param angle
+			   * @return Tuile[] nouvTuiles
+			   */
+			  private Tuile[] orientationTuile(int angle) {
+				    Tuile[] nouvTuiles = new Tuile[4 * 4];
+				    int posX = 3;
+				    int posY = 3;
+				    
+				    //on verifie dans quelle direction nous devons aller en fonction de l'angle 
+				    if (angle == 90) 
+				    {
+				      posY = 0;
+				    } 
+				    else if (angle == 270) 
+				    {
+				      posX = 0;
+				    }
+
+				    //NECESSAIRE DE PASSER EN RADIAN / COSINUS / SINUS SINON RESULTATS ERRONES
+				    double radian = Math.toRadians(angle);
+				    int cosinus = (int) Math.cos(radian);
+				    int sinus = (int) Math.sin(radian);
+				    
+				    //puis on parcours le tableau via les positions des tuiles :
+				    for (int x = 0; x < 4; x++) 
+				    {
+				      for (int y = 0; y < 4; y++) 
+				      {
+				        int newPosX = (x * cosinus) - (y * sinus) + posX;
+				        int newPosY = (x * sinus) + (y * cosinus) + posY;
+				        nouvTuiles[(newPosX) + (newPosY) * 4] = tuilePos(x, y);
+				      }
+				    }
+				    return nouvTuiles;
+				  }
+		
+			  
+			  
+			  /**
+			   * permet de gerer les déplacement vers la gauche 
+			   * et de savoir si l'on doit rajouter des tuiles.
+			   * cette fonction sera appelée entre chaque rotation en fonction de chaque MOUVEMEEEEEEEEEEEEENNNNNNNTTTTTTTTTTT !!
+			   */
+			  public void deplacementGauche() {
+				    boolean besoinNouvTuile = false;
+				    for (int index = 0; index < 4; index++) 
+				    {
+				      Tuile[] ligne = getLigne(index);
+				      Tuile[] insere = multiplicateur(deplaceLigne(ligne));				      
+				      setLigne(index, insere);
+				      //si besoin de tuile alors besoinNouvTuile true alors on inserera une tuile gràce a insereRdmTuile();
+				      if (!besoinNouvTuile && !compareTuiles(ligne, insere))
+				      {
+				        besoinNouvTuile = true;
+				      }
+				    }
+
+				    if (besoinNouvTuile) 
+				    {
+				      insereInRdmTuile();
+				    }
+				  }
+
+				  /**
+				   * gere le déplacement a droite 
+				   **/
+				  public void deplacementDroite() 
+				  {
+				    mesTuiles = orientationTuile(180);
+				    deplacementGauche();
+				    mesTuiles = orientationTuile(180);
+				  }
+
+				  /**
+				   * gere le deplacement vers le haut 
+				   */
+				  public void deplacementHaut() 
+				  {
+				    mesTuiles = orientationTuile(270);
+				    deplacementGauche();
+				    mesTuiles = orientationTuile(90);
+				  }
+
+				  /**
+				   * gere le deplacement vers le bas
+				   */
+				  public void deplacementBas() 
+				  {
+				    mesTuiles = orientationTuile(90);
+				    deplacementGauche();
+				    mesTuiles = orientationTuile(270);
+				  }
 		
 		public static void generWindow(){
 			JFrame game = new JFrame();
@@ -163,8 +413,70 @@ public class Last2048 extends JPanel
 		    game.setVisible(true);			
 		}
 		
-	public Last2048() {
-			repaint();
+		
+			
+		
+		
+	public Last2048() {	
+			 setFocusable(true);
+			    addKeyListener(new KeyAdapter() {
+			      public void touche(KeyEvent touche){
+						
+						 if (touche.getKeyCode() == KeyEvent.VK_ENTER) {
+					          iniPartie();
+					        }
+					        if (!deplacePossible()) {
+					          Defaite = true;
+					        }
+
+					        if (!Victoire && !Defaite) 
+					        {		          
+					           if (
+					        		   (touche.getKeyCode() == KeyEvent.VK_LEFT)  
+					        		   || 
+					        		   (touche.getKeyCode() == KeyEvent.VK_Q)
+					        	)		        	   
+					           {
+					        	   deplacementGauche();
+					           }
+					           
+					           else if (
+					        		   (touche.getKeyCode() == KeyEvent.VK_RIGHT)  
+					        		   || 
+					        		   (touche.getKeyCode() == KeyEvent.VK_D)
+					        		   )
+					           {
+					        	   deplacementDroite();
+					           }
+					        	   
+					            else if (
+					            		(touche.getKeyCode() == KeyEvent.VK_UP) 
+					            		|| 
+					        		   (touche.getKeyCode() == KeyEvent.VK_Z)
+					        		   )
+					           {
+					        	   deplacementHaut();
+					           }
+					           
+					            else if (
+					            		(touche.getKeyCode() == KeyEvent.VK_DOWN) 
+					            		|| 
+					        		   (touche.getKeyCode() == KeyEvent.VK_S)
+					        		   )
+					           {
+					        	   deplacementBas();
+					           }
+					          }
+					        
+
+					        if (!Victoire && !deplacePossible()) {
+					          Defaite = true;
+					        }
+
+					        repaint();
+					      }
+			    });
+			    iniPartie();
 		}	
 	
 	
@@ -194,8 +506,6 @@ public class Last2048 extends JPanel
 	}
 	
 	
-	
-	
 		/*
 		 * cette fonction execute l'affichage via la super classe .paint de java :D
 		 * @param g 
@@ -204,7 +514,13 @@ public class Last2048 extends JPanel
 		public void paint(Graphics g){
 			 super.paint(g);
 			    g.setColor(FIRST_BACKGROUND);
-			    dessineGrille(g);
+			    g.fillRect(0, 0, this.getSize().width, this.getSize().height);
+			    for (int y = 0; y < 4; y++) {
+			        for (int x = 0; x < 4; x++) {
+			          dessineTuile(g, mesTuiles[x + y * 4], x, y);
+			        }
+			      }
+			    
 		}
 	
 		/*
@@ -314,8 +630,8 @@ public class Last2048 extends JPanel
 			    /*
 			     * modifie la vlaveur d'une tuile
 			     */
-			    public Tuile(int value) {
-			      valeur = value;
+			    public Tuile(int nombre) {
+			      valeur = nombre;
 			    }
 			    /*
 			     * On verfifie via cette fonction si la tuile est vierge :
