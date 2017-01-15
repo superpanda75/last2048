@@ -17,7 +17,7 @@ public class Last2048 extends JPanel
 		/**
 		 * fond initial case
 		 */
-		 private static final Color FIRST_BACKGROUND = new Color(0xc0b1a5); 
+		 private static final Color FIRST_BACKGROUND = new Color(0x0099ff); 
 		 private static final String FONT = "Comic Sans Ms";
 		 private static final int TUILE_TAILLE = 80;
 		 private static final int TUILE_ESPACEMENT = 20;
@@ -316,7 +316,7 @@ public class Last2048 extends JPanel
 				    	  //puis on update le score 
 				        valActuelle = valActuelle * 2;
 				        monScore = monScore + valActuelle;
-				        int pourGagner = 8;
+				        int pourGagner = 2048;
 				        if (valActuelle == pourGagner) {
 				          Victoire = true;
 				        }
