@@ -7,7 +7,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.*;
+
 import java.util.List;
 import java.util.LinkedList;
 import java.util.ArrayList;
@@ -665,7 +665,7 @@ public class Last2048 extends JPanel
 		public static void main(String[] args)
 		{
 			JFrame game = new JFrame();
-		    game.setTitle("Dernier 2048 vant la fin du Monde");
+		    game.setTitle("Dernier 2048 avant la fin du Monde");
 		    game.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		    game.setSize(730, 625);
 		    game.setResizable(true);
